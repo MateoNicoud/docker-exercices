@@ -1,6 +1,7 @@
-##!/bin/bash
-#service apache2 start
-#service mysql start
-#
-## Maintenir le conteneur en cours d'exécution
-#tail -f /dev/null
+#!/bin/bash
+
+/etc/init.d/mariadb start
+/etc/init.d/php8.1-fpm start
+/etc/init.d/apache2 start
+
+tail -f /dev/null
