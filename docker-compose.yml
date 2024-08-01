@@ -5,7 +5,7 @@ services:
       - "8080:80"
     volumes:
       - apache_data:/var/www/html
-      - ./logs:/var/log/apache2
+      - ./logs/apache2:/var/log/apache2
     depends_on:
       - mariadb
     environment:
@@ -26,7 +26,8 @@ services:
       MYSQL_DATABASE: database
     volumes:
       - mariadb_data:/var/lib/mysql
-      - ./logs:/var/log/mysql
+      - ./logs/mariadb:/var/log/mysql
+      - ./my_custom.cnf:/etc/mysql/mariadb.conf.d/my_custom.cnf
     networks:
       - my-app
 
