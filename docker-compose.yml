@@ -20,7 +20,8 @@ services:
         max-size: "200k"
         max-file: "10"
     networks:
-      - my-app
+      - external
+      - internal
     command: >
       sh -c "echo 'Include conf-available/custom-servername.conf' >> /etc/apache2/apache2.conf && apache2ctl -D FOREGROUND" # Include the custom config file on startup
 
@@ -39,7 +40,7 @@ services:
         max-size: "200k"
         max-file: "10"
     networks:
-      - my-app
+      - internal
 
   adminer:
     image: adminer:4.8.1
@@ -48,11 +49,13 @@ services:
     depends_on:
       - mariadb
     networks:
-      - my-app
+      - external
+      - internal
 
 volumes:
   mariadb_data:
   apache_data:
 
 networks:
-  my-app:
+  external:
+  internal:
