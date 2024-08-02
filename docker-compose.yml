@@ -1,11 +1,12 @@
 services:
   wordpress:
-    image: wordpress:6.6.1
+    image: wordpress:6.6.1-php8.3-apache
     ports:
       - "8080:80"
     volumes:
       - apache_data:/var/www/html
-      - ./logs/apache2:/var/log/apache2
+#      - ./logs/apache2:/var/log/apache2
+      - ./custom-apache2.conf:/etc/apache2/conf-available/custom-servername.conf
     depends_on:
       - mariadb
     environment:
@@ -13,21 +14,30 @@ services:
       WORDPRESS_DB_NAME: database
       WORDPRESS_DB_USER: root
       WORDPRESS_DB_PASSWORD: h
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
     networks:
       - my-app
-
+    command: >
+      sh -c "echo 'Include conf-available/custom-servername.conf' >> /etc/apache2/apache2.conf && apache2ctl -D FOREGROUND" # Include the custom config file on startup
 
   mariadb:
     image: mariadb:11.4
-    ports:
-      - "8082:3306"
     environment:
       MYSQL_ROOT_PASSWORD: h
       MYSQL_DATABASE: database
     volumes:
       - mariadb_data:/var/lib/mysql
-      - ./logs/mariadb:/var/log/mysql
-      - ./my_custom.cnf:/etc/mysql/mariadb.conf.d/my_custom.cnf
+#      - ./logs/mariadb:/var/log/mysql
+#      - ./my_custom.cnf:/etc/mysql/mariadb.conf.d/my_custom.cnf
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
     networks:
       - my-app
 
