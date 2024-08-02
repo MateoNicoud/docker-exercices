@@ -1,11 +1,12 @@
+
 services:
   wordpress:
-    image: wordpress:6.6.1-php8.3-apache
+    image: wordpress:6.6.1
     ports:
       - "8080:80"
     volumes:
-      - apache_data:/var/www/html
-#      - ./logs/apache2:/var/log/apache2
+      - wordpress_data:/var/www/html
+##      - ./logs/apache2:/var/log/apache2
       - ./custom-apache2.conf:/etc/apache2/conf-available/custom-servername.conf
     depends_on:
       - mariadb
@@ -41,6 +42,41 @@ services:
         max-file: "10"
     networks:
       - internal
+  netdata:
+    image: netdata/netdata:stable
+    container_name: netdata
+    pid: host
+    #network_mode: host
+    restart: unless-stopped
+    cap_add:
+      - SYS_PTRACE
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - netdataconfig:/etc/netdata
+      - netdatalib:/var/lib/netdata
+      - netdatacache:/var/cache/netdata
+      - /:/host/root:ro,rslave
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /var/log:/host/var/log:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - NETDATA_CLAIM_TOKEN_FILE=/run/secrets/netdata_claim_token
+      - NETDATA_CLAIM_URL_FILE=/run/secrets/netdata_claim_url
+      - NETDATA_CLAIM_ROOMS_FILE=/run/secrets/netdata_claim_rooms
+    secrets:
+      - netdata_claim_token
+      - netdata_claim_url
+      - netdata_claim_rooms
+    networks:
+      - internal
+      - external
 
   adminer:
     image: adminer:4.8.1
@@ -54,8 +90,19 @@ services:
 
 volumes:
   mariadb_data:
-  apache_data:
+  wordpress_data:
+  netdataconfig:
+  netdatalib:
+  netdatacache:
 
 networks:
   external:
   internal:
+    internal: true
+secrets:
+  netdata_claim_token:
+    file: ./secret_token.txt
+  netdata_claim_url:
+    file: ./secret_url.txt
+  netdata_claim_rooms:
+    file: ./secret_rooms.txt
